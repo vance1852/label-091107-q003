@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { app } from "../src/server.js";
+import { startTestApp } from "./helpers.js";
 
-test("健康检查返回服务状态", async () => {
-  app.listen(0);
-  const { port } = app.address();
-  const response = await fetch(`http://127.0.0.1:${port}/health`);
-  assert.deepEqual(await response.json(), { service: "relief-supply", status: "ok" });
-  await new Promise((resolve) => app.close(resolve));
+test("健康检查返回服务状态", async (t) => {
+  const ctx = await startTestApp(t);
+  const response = await ctx.call("GET", "/health");
+  assert.deepEqual(response.body, { service: "relief-supply", status: "ok" });
+});
+
+test("未知接口返回 404", async (t) => {
+  const ctx = await startTestApp(t);
+  const response = await ctx.call("GET", "/no-such-route");
+  assert.equal(response.status, 404);
 });
