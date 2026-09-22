@@ -1,16 +1,12 @@
-import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
+import { createDefaultApp } from "./http.js";
 
-export const app = createServer((request, response) => {
-  if (request.method === "GET" && request.url === "/health") {
-    response.writeHead(200, { "content-type": "application/json" });
-    response.end(JSON.stringify({ service: "relief-supply", status: "ok" }));
-    return;
-  }
-  response.writeHead(404, { "content-type": "application/json" });
-  response.end(JSON.stringify({ error: "接口不存在" }));
-});
+export const app = createDefaultApp();
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  app.listen(Number(process.env.PORT ?? 3000));
+  const port = Number(process.env.PORT ?? 3000);
+  app.listen(port, () => {
+    // eslint-disable-next-line no-console
+    console.log(`relief-supply-service 已启动，监听端口 ${port}（数据目录 ${process.env.DATA_DIR ?? "./data"}）`);
+  });
 }
